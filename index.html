@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudyFetch — Paste a SelfStudys link, get the PDF</title>
+  <meta name="description" content="StudyFetch resolves a SelfStudys notes page to its direct PDF download link. Paste the page URL, get a clean filename + one-click download. Free, no sign-up." />
+  <meta property="og:title" content="StudyFetch — SelfStudys link → PDF" />
+  <meta property="og:description" content="Paste the notes page link. Get the PDF. Free, no sign-up." />
+  <meta property="og:type" content="website" />
+  <meta name="theme-color" content="#0b1220" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-glow" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="./">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </span>
+        <span class="brand-name">StudyFetch</span>
+      </a>
+      <nav class="topnav">
+        <a href="#how">How it works</a>
+        <a href="#supported">Supported links</a>
+        <a href="#faq">FAQ</a>
+        <button id="workerBtn" class="ghost-btn" type="button" title="Resolver status & settings">
+          <span id="workerDot" class="dot dot-unknown"></span>
+          <span id="workerLabel">Resolver</span>
+          <span aria-hidden="true">⚙</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- ══════════ HERO ══════════ -->
+    <section class="hero wrap">
+      <div class="pill">Free · No sign-up · Works on phone &amp; desktop</div>
+      <h1>Paste a SelfStudys link.<br /><span class="accent">Get the PDF.</span></h1>
+      <p class="lede">
+        StudyFetch reads the notes page, finds its direct PDF file,
+        names it cleanly, and hands you a one-click download —
+        no extension required.
+      </p>
+
+      <form id="fetchForm" class="urlbar" autocomplete="off" spellcheck="false">
+        <div class="urlbar-input">
+          <span class="urlbar-icon" aria-hidden="true">🔗</span>
+          <input
+            id="urlInput"
+            type="url"
+            inputmode="url"
+            placeholder="https://www.selfstudys.com/…/notes/…"
+            aria-label="SelfStudys page URL"
+            required
+          />
+          <button id="clearBtn" class="icon-btn" type="button" title="Clear" hidden>✕</button>
+        </div>
+        <div class="urlbar-actions">
+          <button id="pasteBtn" class="secondary-btn" type="button">📋 Paste</button>
+          <button id="submitBtn" class="primary-btn" type="submit">
+            <span id="submitLabel">Get PDF →</span>
+          </button>
+        </div>
+      </form>
+      <div class="sample-row">
+        <span>No link handy?</span>
+        <button id="sampleBtn" class="link-btn" type="button">Try a sample Matrices link</button>
+      </div>
+
+      <!-- Status / progress -->
+      <div id="statusCard" class="card status-card" hidden>
+        <div class="spinner" aria-hidden="true"></div>
+        <div>
+          <p id="statusTitle" class="status-title">Resolving…</p>
+          <p id="statusDetail" class="muted">Fetching page…</p>
+        </div>
+      </div>
+
+      <!-- Error -->
+      <div id="errorCard" class="card error-card" hidden>
+        <p class="error-title">⚠️ <span id="errorTitle">Couldn't resolve that link</span></p>
+        <p id="errorDetail" class="muted"></p>
+        <div class="row">
+          <button id="retryBtn" class="secondary-btn" type="button">Retry</button>
+          <a id="openOriginalBtn" class="ghost-btn" href="#" target="_blank" rel="noopener">Open original page ↗</a>
+        </div>
+      </div>
+
+      <!-- Success -->
+      <div id="resultCard" class="card result-card" hidden>
+        <div class="file-row">
+          <div class="file-icon" aria-hidden="true">📄</div>
+          <div class="file-meta">
+            <p id="fileName" class="file-name">document.pdf</p>
+            <p id="fileSub" class="muted">Direct PDF link ready</p>
+          </div>
+          <span class="ok-badge">✓ Ready</span>
+        </div>
+        <div class="row result-actions">
+          <a id="downloadBtn" class="primary-btn" href="#" download>⬇ Download PDF</a>
+          <a id="openPdfBtn" class="secondary-btn" href="#" target="_blank" rel="noopener">Open ↗</a>
+          <button id="copyBtn" class="ghost-btn" type="button">⧉ Copy link</button>
+        </div>
+        <p class="tiny muted">If the download opens in a new tab instead, use your browser's save button there — same file.</p>
+      </div>
+
+      <!-- Resolver settings -->
+      <div id="workerCard" class="card worker-card" hidden>
+        <p class="worker-title">Resolver settings</p>
+        <p class="muted small">
+          StudyFetch needs a tiny Cloudflare Worker to read the notes page
+          (browsers block cross-site reads otherwise). See README for the 5-minute setup.
+        </p>
+        <label class="field">
+          <span>Worker URL</span>
+          <input id="workerInput" type="url" inputmode="url" placeholder="https://studyfetch-resolver.YOU.workers.dev" spellcheck="false" />
+        </label>
+        <div class="row">
+          <button id="saveWorkerBtn" class="secondary-btn" type="button">Save</button>
+          <button id="testWorkerBtn" class="ghost-btn" type="button">Test</button>
+          <span id="workerMsg" class="muted small"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ HISTORY ══════════ -->
+    <section id="historySection" class="wrap section" hidden>
+      <h2>Recent fetches</h2>
+      <ul id="historyList" class="history-list"></ul>
+      <button id="clearHistoryBtn" class="link-btn danger" type="button">Clear history</button>
+    </section>
+
+    <!-- ══════════ HOW ══════════ -->
+    <section id="how" class="wrap section">
+      <h2>How it works</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-n">1</div>
+          <h3>Copy the notes link</h3>
+          <p>Any SelfStudys notes / revision-notes page. Example:<br /><code>…/cuet/mathematics/…/notes/3-matrices</code></p>
+        </div>
+        <div class="step">
+          <div class="step-n">2</div>
+          <h3>Paste it above</h3>
+          <p>The resolver reads the page and extracts its embedded direct PDF pointer (<code>sitepdfs/…</code>) — the same one the viewer loads.</p>
+        </div>
+        <div class="step">
+          <div class="step-n">3</div>
+          <h3>Download</h3>
+          <p>You get a clean filename like <code>cuet_3-matrices.pdf</code> and a one-click download. Nothing is uploaded or stored.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SUPPORTED ══════════ -->
+    <section id="supported" class="wrap section">
+      <h2>Supported links</h2>
+      <div class="chips">
+        <span class="chip">✓ CUET / exam notes pages</span>
+        <span class="chip">✓ Class notes &amp; book pages</span>
+        <span class="chip">✓ HD / advance-pdf-viewer pages</span>
+        <span class="chip">✕ Login-walled or removed pages</span>
+      </div>
+      <p class="muted small">Rule of thumb: if the page loads its PDF viewer publicly, StudyFetch can resolve it.</p>
+    </section>
+
+    <!-- ══════════ FAQ ══════════ -->
+    <section id="faq" class="wrap section">
+      <h2>FAQ</h2>
+      <details class="faq-item" open>
+        <summary>Is it free? Do I need an account?</summary>
+        <p>Yes, free, no account. The site is static (GitHub Pages) plus a tiny resolver Worker on Cloudflare's free tier.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Why does it need a "Worker"?</summary>
+        <p>Browsers block one website from reading another site's pages (CORS). The Worker fetches the SelfStudys page server-side and returns just the extracted PDF link as JSON. It never stores your links.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Where does the PDF come from? Is it re-hosted?</summary>
+        <p>No re-hosting. The download button points directly at SelfStudys' own file URL (<code>selfstudys.com/sitepdfs/…</code>). StudyFetch only automates finding that link.</p>
+      </details>
+      <details class="faq-item">
+        <summary>It says "no PDF pointer found" — what now?</summary>
+        <p>Make sure the URL is a notes/document page (not a homepage or listing), that it loads without login, and try again. If SelfStudys changed their page markup, the resolver patterns may need an update — see README.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Can I share a result?</summary>
+        <p>Yes — after resolving, your address bar contains <code>?url=…</code>. Anyone opening that link gets the same result instantly.</p>
+      </details>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <p><strong>StudyFetch</strong> — a link→PDF helper for publicly viewable study pages.</p>
+      <p class="tiny muted">Content belongs to its respective owners (e.g. SelfStudys). Fetch for personal study use only and respect the source site's terms. Not affiliated with SelfStudys.</p>
+    </div>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
