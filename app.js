@@ -14,7 +14,6 @@
     (typeof STUDYFETCH_SAMPLE_URL === "string" && STUDYFETCH_SAMPLE_URL) ||
     "https://www.selfstudys.com/cuet/mathematics/online/exam/notes/3-matrices";
 
-  var LS_WORKER = "studyfetch.workerUrl";
   var LS_HISTORY = "studyfetch.history";
 
   // ── DOM ──
@@ -27,22 +26,10 @@
   var retryBtn = $("retryBtn"), openOriginalBtn = $("openOriginalBtn");
   var resultCard = $("resultCard"), fileName = $("fileName"), fileSub = $("fileSub");
   var downloadBtn = $("downloadBtn"), openPdfBtn = $("openPdfBtn"), copyBtn = $("copyBtn");
-  var workerBtn = $("workerBtn"), workerCard = $("workerCard"), workerDot = $("workerDot");
-  var workerLabel = $("workerLabel"), workerInput = $("workerInput");
-  var saveWorkerBtn = $("saveWorkerBtn"), testWorkerBtn = $("testWorkerBtn"), workerMsg = $("workerMsg");
   var historySection = $("historySection"), historyList = $("historyList"), clearHistoryBtn = $("clearHistoryBtn");
 
   function workerUrl() {
-    try {
-      var saved = localStorage.getItem(LS_WORKER);
-      if (saved && saved.trim()) return saved.trim().replace(/\/+$/, "");
-    } catch (e) {}
     return DEFAULT_WORKER ? DEFAULT_WORKER.replace(/\/+$/, "") : "";
-  }
-
-  function setWorkerStatus(state, label) {
-    workerDot.className = "dot " + (state === "ok" ? "dot-ok" : state === "bad" ? "dot-bad" : "dot-unknown");
-    workerLabel.textContent = label || "Resolver";
   }
 
   // ── Validation ──
@@ -137,7 +124,7 @@
     var seq = Promise.reject(new Error("no-fallback-yet"));
     FALLBACKS.forEach(function (build, idx) {
       seq = seq.catch(function () {
-        onStep("Trying fallback source " + (idx + 1) + "…");
+        onStep("Trying alternative route…");
         return fetchWithTimeout(build(pageUrl), 25000).then(function (r) {
           if (!r.ok) throw new Error("Fallback " + (idx + 1) + " responded " + r.status);
           return r.text();
@@ -167,13 +154,12 @@
     try { openOriginalBtn.href = pageUrl || input.value.trim(); } catch (e) {}
     submitBtn.disabled = false; submitLabel.textContent = "Get PDF →";
   }
-  function showResult(pageUrl, pdfUrl, filename, title, via) {
+  function showResult(pageUrl, pdfUrl, filename, title) {
     hideAll(); resultCard.hidden = false;
     fileName.textContent = filename;
-    var parts = [];
-    if (title) parts.push(title.length > 80 ? title.slice(0, 80) + "…" : title);
-    parts.push(via === "worker" ? "via secure resolver" : "via fallback source");
-    fileSub.textContent = parts.join(" · ");
+    fileSub.textContent = title
+      ? (title.length > 80 ? title.slice(0, 80) + "…" : title)
+      : "Direct PDF link ready";
     downloadBtn.href = pdfUrl;
     downloadBtn.setAttribute("download", filename);
     openPdfBtn.href = pdfUrl;
@@ -192,21 +178,17 @@
   var lastRequest = null;
   function resolve(pageUrl) {
     lastRequest = pageUrl;
-    showStatus("Resolving…", "Contacting resolver…");
-    var hadWorker = !!workerUrl();
+    showStatus("Resolving…", "Reading the notes page…");
     resolveViaWorker(pageUrl).then(function (res) {
       if (lastRequest !== pageUrl) return;
-      setWorkerStatus("ok", "Resolver ✓");
       finishResolve(pageUrl, res);
     }).catch(function (wErr) {
       if (lastRequest !== pageUrl) return;
       if (wErr && wErr.message === "NO_WORKER") {
-        setWorkerStatus("bad", "No resolver");
-        showStatus("Resolving…", "No Worker configured — trying public fallback…");
-      } else {
-        setWorkerStatus("bad", "Resolver ✕");
-        showStatus("Resolving…", "Primary resolver failed — trying fallback…");
+        showError("Resolver not configured", "The site owner hasn't set a resolver yet. Please try again later.", pageUrl);
+        return;
       }
+      showStatus("Resolving…", "Trying alternative route…");
       resolveViaFallback(pageUrl, function (step) {
         showStatus("Resolving…", step);
       }).then(function (res) {
@@ -215,17 +197,18 @@
       }).catch(function (fErr) {
         if (lastRequest !== pageUrl) return;
         var msg = (fErr && fErr.message) || "Unknown error.";
-        var hint = hadWorker
-          ? " The page may not be a notes page, may need login, or SelfStudys may have changed its markup."
-          : " Set up the Worker (gear icon above, 5 min, free) for reliable results — fallbacks are rate-limited." + " " + msg;
-        showError("Couldn't resolve that link", msg + hint, pageUrl);
+        showError(
+          "Couldn't resolve that link",
+          msg + " Make sure it's a notes page that loads without login, then hit Retry.",
+          pageUrl
+        );
       });
     });
   }
 
   function finishResolve(pageUrl, res) {
     var filename = deriveFilename(pageUrl, res.title);
-    showResult(pageUrl, res.pdfUrl, filename, res.title, res.via);
+    showResult(pageUrl, res.pdfUrl, filename, res.title);
   }
 
   // ── History ──
@@ -308,62 +291,18 @@
     document.body.removeChild(ta);
   }
 
-  // Worker settings
-  workerBtn.addEventListener("click", function () {
-    workerCard.hidden = !workerCard.hidden;
-    if (!workerCard.hidden) {
-      workerInput.value = workerUrl();
-      workerMsg.textContent = "";
-      workerCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }
-  });
-  saveWorkerBtn.addEventListener("click", function () {
-    var v = workerInput.value.trim().replace(/\/+$/, "");
-    if (v && !/^https:\/\//i.test(v)) { workerMsg.textContent = "Must start with https://"; return; }
-    try {
-      if (v) localStorage.setItem(LS_WORKER, v);
-      else localStorage.removeItem(LS_WORKER);
-    } catch (e) {}
-    workerMsg.textContent = v ? "Saved ✓" : "Cleared — using default.";
-    pingWorker();
-  });
-  testWorkerBtn.addEventListener("click", function () { pingWorker(true); });
-  function pingWorker(loud) {
-    var w = workerInput.value.trim().replace(/\/+$/, "") || workerUrl();
-    if (!w) {
-      setWorkerStatus("bad", "No resolver");
-      if (loud) workerMsg.textContent = "No Worker URL set.";
-      return;
-    }
-    if (loud) workerMsg.textContent = "Testing…";
-    fetchWithTimeout(w + "/?url=" + encodeURIComponent(SAMPLE), 20000).then(function (r) { return r.json(); }).then(function (d) {
-      if (d && d.ok && d.pdfUrl) {
-        setWorkerStatus("ok", "Resolver ✓");
-        workerMsg.textContent = "Working ✓ — found: " + (d.pdfUrl.split("/").pop() || "PDF");
-      } else throw new Error((d && d.error) || "bad response");
-    }).catch(function (e) {
-      setWorkerStatus("bad", "Resolver ✕");
-      workerMsg.textContent = "Failed: " + e.message;
-    });
-  }
-
-  clearHistoryBtn.addEventListener("click", function () {
-    try { localStorage.removeItem(LS_HISTORY); } catch (e) {}
-    renderHistory();
-  });
-
   // ── Init ──
   renderHistory();
   syncClear();
-  if (workerUrl()) pingWorker(false);
-  else setWorkerStatus("unknown", "Resolver");
 
+  // Shared ?url= links prefill the input but NEVER auto-resolve —
+  // the user always presses the button explicitly.
   try {
     var q = new URL(window.location.href).searchParams.get("url");
     if (q) {
       var n = normalizePageUrl(q);
-      if (!n.error) { input.value = n.url; syncClear(); resolve(n.url); }
-      else { input.value = q; syncClear(); }
+      input.value = n.error ? q : n.url;
+      syncClear();
     }
   } catch (e) {}
 })();

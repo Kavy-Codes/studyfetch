@@ -61,11 +61,9 @@ site's pages (CORS). The Worker does that read server-side.
    Test it in a browser tab like this:
    `https://studyfetch-resolver.<your-name>.workers.dev/?url=https://www.selfstudys.com/cuet/mathematics/online/exam/notes/3-matrices`
    You should get JSON containing `"ok":true` and a `sitepdfs` URL.
-5. **Give that URL to me** (paste it in chat). I will wire it into
-   `config.js` as the default so every visitor uses it automatically.
-   (Self-serve alternative: open your live site → gear **⚙ Resolver** →
-   paste the Worker URL → **Save**. Stored in that browser only — fine for
-   testing, but doing step 5 makes it work for everyone with zero setup.)
+5. **Give that URL to the site owner** to wire into `config.js` as the
+   default so every visitor uses it automatically. (The Worker URL is
+   owner-configured only — visitors have no way to change it.)
 
 ### Worker limits & safety (already coded)
 
@@ -76,11 +74,11 @@ site's pages (CORS). The Worker does that read server-side.
 
 ## Part 3 — Verify end-to-end
 
-1. Open `https://<you>.github.io/studyfetch/?url=<a selfstudys notes link>`.
+1. Open `https://<you>.github.io/studyfetch/`, paste a SelfStudys notes link,
+   hit **Get PDF**.
 2. Expect: spinner → green **✓ Ready** card → filename like
    `cuet_3-matrices.pdf` → **Download PDF** saves the file.
-3. Click gear ⚙ → **Test** → expect "Working ✓".
-4. Try one CUET link, one regular class-notes link, and one
+3. Try one CUET link, one regular class-notes link, and one
    `…/advance-pdf-viewer` link (all three resolve to the same mechanism).
 
 ## If something breaks later

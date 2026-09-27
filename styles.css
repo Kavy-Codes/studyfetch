@@ -75,11 +75,6 @@ code {
 .topnav a { color: var(--muted); text-decoration: none; font-size: 0.9rem; font-weight: 600; padding: 8px 10px; border-radius: 8px; }
 .topnav a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
 
-.dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
-.dot-unknown { background: #8a93ad; }
-.dot-ok { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
-.dot-bad { background: var(--warn); box-shadow: 0 0 8px var(--warn); }
-
 /* ── Buttons ── */
 .primary-btn, .secondary-btn, .ghost-btn {
   font-family: var(--font);
@@ -214,23 +209,6 @@ code {
   padding: 4px 12px;
 }
 .result-actions { margin-top: 16px; }
-
-.worker-card .worker-title { font-weight: 800; margin: 0 0 4px; }
-.worker-card p { margin: 0 0 10px; }
-.field { display: block; margin: 10px 0; }
-.field span { display: block; font-size: 0.82rem; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
-.field input {
-  width: 100%;
-  background: rgba(0,0,0,0.28);
-  border: 1px solid var(--card-border);
-  border-radius: 10px;
-  color: var(--text);
-  font-family: var(--font);
-  font-size: 0.9rem;
-  padding: 11px 12px;
-  outline: none;
-}
-.field input:focus { border-color: var(--accent); }
 
 /* ── Sections ── */
 .section { padding: 44px 20px 0; }

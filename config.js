@@ -4,9 +4,7 @@
 // 1. Deploy worker.js on Cloudflare (see README.md), then paste
 //    your Worker URL below, e.g.:
 //    const STUDYFETCH_WORKER_URL = "https://studyfetch-resolver.yourname.workers.dev";
-// 2. You can also set/override it at runtime on the site itself
-//    (gear icon → Worker URL → saved to localStorage). The runtime
-//    value always wins over this default.
+//    This is owner-configured only — end users have no way to change it.
 // ─────────────────────────────────────────────
 const STUDYFETCH_WORKER_URL = "https://studyfetch-resolver.kavyatiwari-me.workers.dev";
 

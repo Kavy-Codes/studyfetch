@@ -30,11 +30,6 @@
         <a href="#how">How it works</a>
         <a href="#supported">Supported links</a>
         <a href="#faq">FAQ</a>
-        <button id="workerBtn" class="ghost-btn" type="button" title="Resolver status & settings">
-          <span id="workerDot" class="dot dot-unknown"></span>
-          <span id="workerLabel">Resolver</span>
-          <span aria-hidden="true">⚙</span>
-        </button>
       </nav>
     </div>
   </header>
@@ -112,23 +107,6 @@
         <p class="tiny muted">If the download opens in a new tab instead, use your browser's save button there — same file.</p>
       </div>
 
-      <!-- Resolver settings -->
-      <div id="workerCard" class="card worker-card" hidden>
-        <p class="worker-title">Resolver settings</p>
-        <p class="muted small">
-          StudyFetch needs a tiny Cloudflare Worker to read the notes page
-          (browsers block cross-site reads otherwise). See README for the 5-minute setup.
-        </p>
-        <label class="field">
-          <span>Worker URL</span>
-          <input id="workerInput" type="url" inputmode="url" placeholder="https://studyfetch-resolver.YOU.workers.dev" spellcheck="false" />
-        </label>
-        <div class="row">
-          <button id="saveWorkerBtn" class="secondary-btn" type="button">Save</button>
-          <button id="testWorkerBtn" class="ghost-btn" type="button">Test</button>
-          <span id="workerMsg" class="muted small"></span>
-        </div>
-      </div>
     </section>
 
     <!-- ══════════ HISTORY ══════════ -->
@@ -193,7 +171,7 @@
       </details>
       <details class="faq-item">
         <summary>Can I share a result?</summary>
-        <p>Yes — after resolving, your address bar contains <code>?url=…</code>. Anyone opening that link gets the same result instantly.</p>
+        <p>Yes — after resolving, your address bar contains <code>?url=…</code>. Anyone opening that link gets the input prefilled — one click and they have the same result.</p>
       </details>
     </section>
   </main>
