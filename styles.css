@@ -260,6 +260,8 @@ code {
 
 .footer { border-top: 1px solid var(--card-border); margin-top: 60px; padding: 28px 0 40px; }
 .footer p { margin: 6px 0; }
+.footer a { color: var(--accent); text-decoration: none; font-weight: 700; }
+.footer a:hover { text-decoration: underline; }
 
 /* ── Responsive ── */
 @media (max-width: 680px) {
